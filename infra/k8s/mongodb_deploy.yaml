@@ -1,0 +1,89 @@
+# Run this after deploy::  k exec -c siq-mongo  -it $(kga | grep pod/siq-mongo | cut -d" " -f1,1)  -- sh -c "mongosh < /etc/mongodb-init/mongodb-init.js"
+
+# apiVersion: v1
+# kind: PersistentVolume
+# metadata:
+#   name: mongo-pv
+# spec:
+#   capacity:
+#     storage: 256Mi
+#   accessModes:
+#     - ReadWriteOnce
+#   hostPath:
+#     path: /tmp/db
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: mongo-pvc
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 256Mi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongodb-init-scripts
+data:
+  mongodb-init.js: |-
+      use genes;
+      db.createCollection("ensemblGenes");
+      db.ensemblGenes.createIndex({id: 1}, {unique: true });
+      db.createCollection("disgenetGenes"); 
+      db.disgenetGenes.createIndex({id: 1}, {unique: true });
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: siq-mongo-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: siq-mongo
+  template:
+    metadata:
+      labels:
+        app: siq-mongo
+    spec:
+      volumes:
+        - name: mongodb-init-scripts
+          configMap:
+            name: mongodb-init-scripts
+      # initContainers:
+      # - name: init-mongo
+      #   image: mongo
+      #   command: ["sh", "-c", "mongosh < /etc/mongodb-init/mongodb-init.js"]
+      #   volumeMounts:
+      #   - name: mongodb-init-scripts
+      #     mountPath: /etc/mongodb-init
+      containers:
+      - name: siq-mongo
+        image: mongo
+        # command: ["sh", "-c", "mongosh < /etc/mongodb-init/mongodb-init.js"]
+        volumeMounts:
+        - name: mongodb-init-scripts
+          mountPath: /etc/mongodb-init
+        # command: ["/bin/sh", "-c"]
+        # args: ["echo ls"]
+        # args:  ["echo \"$'use genes2\ndb.createCollection(\"ensemblGenes\",{ clusteredIndex: {\"key\":{_id:1},\"unique\":true,\"name\":\"ensemblGenes clustered key\" } } )'\" | mongosh"]
+        # resources:
+        #   limits:
+        #     memory: "128Mi"
+        #     cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: siq-mongo-srv
+spec:
+  selector:
+    app: siq-mongo
+  ports:
+    - name: db
+      protocol: TCP
+      port: 27017
+      targetPort: 27017

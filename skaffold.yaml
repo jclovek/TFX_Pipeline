@@ -1,0 +1,40 @@
+apiVersion: skaffold/v2beta29
+kind: Config
+deploy:
+  kubectl:
+    manifests: 
+      - ./infra/k8s/*.yaml
+    hooks:
+      after:
+        - container:
+            command: ["sh", "-c", "mongosh < /etc/mongodb-init/mongodb-init.js"]
+            containerName: siq-mongo # use a glob pattern to prefix-match the container name and pod name for deployments, stateful-sets, etc.
+            podName: siq-mongo-db*
+build:
+  local:
+    push: false
+  artifacts:
+  - image: jclovek/ensembl_api
+    context: ingest
+    docker:
+        dockerfile: Dockerfile
+    sync:
+        manual:
+          - src: "ingest/*.py"
+            dest: .
+  - image: jclovek/mongo-api
+    context: mongo-api
+    docker:
+        dockerfile: Dockerfile
+    sync:
+        manual:
+          - src: "mongo-api/*.py"
+            dest: .
+  - image: jclovek/postgres-import-api
+    context: postgres
+    docker:
+        dockerfile: Dockerfile
+    sync:
+        manual:
+          - src: "postgres/*.py"
+            dest: .  

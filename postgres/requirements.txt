@@ -1,0 +1,7 @@
+flask
+requests
+pymongo
+kafka-python
+Flask-SQLAlchemy
+psycopg2
+

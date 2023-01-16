@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-import-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-import-api
+  template:
+    metadata:
+      labels:
+        app: postgres-import-api
+    spec:
+      containers:
+      - name: postgres-import-api
+        image: jclovek/postgres-import-api:latest
+        ports:
+        - containerPort: 5030
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-import-api
+spec:
+  selector:
+    app: postgres-import-api
+  type: LoadBalancer
+  ports:
+  - port: 5030
+    targetPort: 5030
+
+
