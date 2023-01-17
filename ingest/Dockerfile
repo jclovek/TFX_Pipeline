@@ -11,10 +11,10 @@ RUN /usr/local/bin/python -m pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 # Copy the API code
-COPY ensembl_api.py .
+COPY ingest_api.py .
 
 # Expose port 5010
 EXPOSE 5010
 
 # Run the API
-CMD ["python", "ensembl_api.py"]
+CMD ["python", "ingest_api.py"]

@@ -11,14 +11,14 @@ kafkaBootstrap = "my-cluster-kafka-bootstrap:9092"
 mongoHost = "" 'mongodb://siq-mongo-srv:27017/'
 
 client = MongoClient(mongoHost)
-# ensembl_db = client['ensembl-genes']
+# ensembl_db = client['ensemblGenes']
 db = client['genes']
 logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 logging.info("Starting Mongo API.")
 
 # Kafka consumer
 ensembl_consumer = KafkaConsumer(
-    'ensembl-genes',
+    'ensemblGenes',
      bootstrap_servers=kafkaBootstrap,
      value_deserializer=lambda m: json.loads(m.decode('ascii'))
 )

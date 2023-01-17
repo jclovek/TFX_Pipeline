@@ -14,7 +14,7 @@ build:
   local:
     push: false
   artifacts:
-  - image: jclovek/ensembl_api
+  - image: jclovek/ingest_api
     context: ingest
     docker:
         dockerfile: Dockerfile

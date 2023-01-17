@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: ensembl-ingest
-        image: jclovek/ensembl_api:latest
+        image: jclovek/ingest_api:latest
         ports:
         - containerPort: 5010
 ---

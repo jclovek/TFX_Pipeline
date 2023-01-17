@@ -24,7 +24,7 @@ db = SQLAlchemy(app)
 kafkaBootstrap = "my-cluster-kafka-bootstrap:9092"
 
 ensembl_consumer = KafkaConsumer(
-    'ensembl-genes',
+    'ensemblGenes',
      bootstrap_servers=kafkaBootstrap,
      value_deserializer=lambda m: json.loads(m.decode('ascii'))
 )
