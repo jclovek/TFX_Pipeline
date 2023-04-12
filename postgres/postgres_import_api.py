@@ -12,7 +12,6 @@ sqlPassword = "changeme"
 
 app = Flask(__name__)
 logging.basicConfig(stream=sys.stderr, level=logging.INFO)
-logging.info('get_gene called for id: %s', id)
 # 'postgresql://admin:psltest@host:port/database'
 URI = 'postgresql://' + sqlUser + ':' + sqlPassword + '@' + sqlHost + '/postgresdb'
 print("SQLALCHEMY_DATABASE_URI: " + URI, file=sys.stderr)
@@ -78,11 +77,20 @@ def add_gene(data):
       return jsonify({'message': 'An error occurred while adding the gene'})
 
 def consume_ensembl():
-    logging.info("consume_ensembl()")
+    logging.info("poll kafka for ensembl data and send to postgres")
     for message in ensembl_consumer:
         data = message.value
         # ensembl_db.mycollection.insert_one(data)
         add_gene(data)
+    while True:
+        msg = ensembl_consumer.poll(timeout_ms=1000)
+        if msg is not None:
+            for message in msg.values():
+                for record in message:
+                    add_gene(record.value)
+
+def test_thread():
+    logging.info("test_thread()")
 
 @app.route('/sqldb', methods=['POST'])
 def send_to_postgres():
@@ -93,10 +101,9 @@ def send_to_postgres():
   except:
     return jsonify({'message': 'An error occurred while adding the gene'})
 
-
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5030, debug=True)
     with app.app_context(): 
-      ensembl_thread = threading.Thread(target=consume_ensembl)
+      ensembl_thread = threading.Thread(target=test_thread())
       ensembl_thread.start()    
       db.create_all()

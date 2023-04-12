@@ -31,3 +31,9 @@ spec:
   entityOperator:
     topicOperator: {}
     userOperator: {}
+  # kafkaConnect:
+  #   replicas: 1
+  #   config:
+  #     plugin.path: "/opt/kafka/plugins"
+  # kafkaStreams:
+  #   replicas: 1
